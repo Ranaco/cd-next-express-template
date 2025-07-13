@@ -17,10 +17,6 @@ A modern full-stack template with Next.js, Express, and Prisma, featuring a comp
 - PostgreSQL database with Prisma ORM
 - Cookie-based authentication
 
-## Demo
-
-![Authentication Demo](https://via.placeholder.com/800x400?text=Authentication+System+Demo)
-
 ## Getting Started
 
 ### Prerequisites
