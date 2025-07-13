@@ -1,23 +1,52 @@
 {
-  "name": "cd-next-express-template",
+  "name": "nextjs-express-prisma-auth-template",
   "version": "0.1.0",
-  "private": true,
+  "description": "Next.js template with Express backend and Prisma ORM featuring a complete authentication system",
+  "private": false,
+  "keywords": ["nextjs", "express", "prisma", "authentication", "template"],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Code-Decoders/cd-next-express-template.git"
+  },
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "nodemon -r dotenv/config server/index.js",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "node -r dotenv/config server/index.js",
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "db:seed": "node -r dotenv/config prisma/seed.js",
+    "test:api": "node api-test.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.1.0",
+    "joi": "^17.13.3",
+    "js-cookie": "^3.0.5",
+    "jsonwebtoken": "^9.0.2",
+    "next": "15.3.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.3.5"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "@prisma/client": "^5.7.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
-    "@eslint/eslintrc": "^3"
+    "nodemon": "^3.1.10",
+    "prisma": "^5.7.1",
+    "tailwindcss": "^4"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }

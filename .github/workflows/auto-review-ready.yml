@@ -1,0 +1,40 @@
+# This workflow will automatically mark a PR as ready for review when all CI checks pass
+
+name: Auto Review Ready
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  auto-review-ready:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI to succeed
+        uses: fountainhead/action-wait-for-check@v1.1.0
+        id: wait-for-ci
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: build
+          ref: ${{ github.event.pull_request.head.sha }}
+          timeoutSeconds: 300
+          intervalSeconds: 15
+          
+      - name: Mark PR as ready for review
+        if: steps.wait-for-ci.outputs.conclusion == 'success'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.pull_request.number;
+            
+            if (context.payload.pull_request.draft) {
+              await github.rest.pulls.updatePullRequest({
+                owner,
+                repo,
+                pull_number,
+                draft: false
+              });
+              console.log(`PR #${pull_number} marked as ready for review`);
+            }

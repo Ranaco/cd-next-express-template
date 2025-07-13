@@ -1,0 +1,28 @@
+repository:
+  name: nextjs-express-prisma-auth
+  description: Next.js + Express + Prisma template with authentication
+  private: false
+  has_issues: true
+  has_projects: true
+  has_wiki: true
+  has_downloads: true
+  is_template: true
+  
+# Labels for the repository
+labels:
+  - name: bug
+    color: d73a4a
+  - name: documentation
+    color: 0075ca
+  - name: enhancement
+    color: a2eeef
+  - name: good first issue
+    color: 7057ff
+  - name: help wanted
+    color: 008672
+  - name: question
+    color: d876e3
+  - name: wontfix
+    color: ffffff
+  - name: triage
+    color: fbca04
