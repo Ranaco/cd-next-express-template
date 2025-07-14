@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { isAuthenticated } from '../middleware/auth.js';
+import { updateProfile } from '../controllers/user/profile.js';
 
 const userRouter = new Router();
 
@@ -25,6 +26,8 @@ userRouter.get('/profile', isAuthenticated, (req, res) => {
         });
     }
 });
+
+userRouter.put('/profile', isAuthenticated, updateProfile);
 
 userRouter.get('/status', (req, res) => {
     res.json({ 

@@ -6,9 +6,12 @@
 .pnp.*
 .yarn/*
 !.yarn/patches
-!.yarn/plugins
+!.yar/plugins
 !.yarn/releases
 !.yarn/versions
+
+./package.lock.json
+./yarn.lock
 
 # testing
 /coverage

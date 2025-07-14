@@ -60,10 +60,10 @@ export default function Home() {
               View on GitHub
             </a>
             <a
-              href="/api/auth/login"
+              href="/auth-demo"
               className="rounded-md border border-gray-300 dark:border-gray-700 px-6 py-3 font-medium text-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
             >
-              Demo Login
+              Try Auth Demo
             </a>
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function Home() {
           </a>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          © {new Date().getFullYear()} Next.js Express Template. MIT License.
+          © {new Date().getFullYear()} CodeDecoders Next.js Express Template. MIT License.
         </p>
       </footer>
     </div>
