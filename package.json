@@ -3,7 +3,13 @@
   "version": "0.1.0",
   "description": "Next.js template with Express backend and Prisma ORM featuring a complete authentication system",
   "private": false,
-  "keywords": ["nextjs", "express", "prisma", "authentication", "template"],
+  "keywords": [
+    "nextjs",
+    "express",
+    "prisma",
+    "authentication",
+    "template"
+  ],
   "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "repository": {
@@ -11,9 +17,9 @@
     "url": "https://github.com/Code-Decoders/cd-next-express-template.git"
   },
   "scripts": {
-    "dev": "nodemon -r dotenv/config server/index.js",
+    "express-dev": "nodemon -r dotenv/config server/index.js dotenv_config_path=./.env",
     "build": "next build",
-    "start": "node -r dotenv/config server/index.js",
+    "express-start": "node -r dotenv/config server/index.js dotenv_config_path=./.env",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -23,6 +29,7 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "dotenv": "^17.2.0",
@@ -33,13 +40,14 @@
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "next": "15.3.5",
+    "node-fetch": "^3.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
     "@prisma/client": "^5.7.1",
+    "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "nodemon": "^3.1.10",

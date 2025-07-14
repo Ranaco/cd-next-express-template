@@ -63,7 +63,7 @@ export const logActivity = async (data) => {
  * Log authentication events
  */
 export const logAuthEvent = async (data) => {
-    return prisma.authEventLog.create({
+    return prisma.authLog.create({
         data
     });
 };
