@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
-import prisma from '../../../prisma/client.js';
-import { logActivity, logAuthEvent } from './auth.js';
+import prisma from '../../prisma/client.js';
+import auth from '../../wrappers/auth/index.js';
 
 /**
  * Verify user's email using token or OTP
@@ -30,9 +30,7 @@ export const verifyEmail = async (req, res) => {
                 include: { user: true }
             });
         } else {
-            const user = await prisma.user.findUnique({
-                where: { email: email.toLowerCase() }
-            });
+            const user = await auth.findUserByEmail(email);
             
             if (!user) {
                 return res.status(404).json({
@@ -73,7 +71,7 @@ export const verifyEmail = async (req, res) => {
             }
         });
         
-        await logActivity({
+        await auth.logActivity({
             userId: verification.userId,
             action: 'EMAIL_VERIFIED',
             description: 'User verified their email',
@@ -82,7 +80,7 @@ export const verifyEmail = async (req, res) => {
             status: 'SUCCESS'
         });
         
-        await logAuthEvent({
+        await auth.logAuthEvent({
             userId: verification.userId,
             eventType: 'EMAIL_VERIFICATION',
             status: 'SUCCESS',
@@ -171,15 +169,13 @@ export const register = async (req, res) => {
             }
         });
         
-        await prisma.activityLog.create({
-            data: {
-                userId: user.id,
-                action: 'REGISTER',
-                description: 'User registered',
-                ipAddress: req.ip || null,
-                userAgent: req.headers['user-agent'] || null,
-                status: 'SUCCESS'
-            }
+        await auth.logActivity({
+            userId: user.id,
+            action: 'REGISTER',
+            description: 'User registered',
+            ipAddress: req.ip || null,
+            userAgent: req.headers['user-agent'] || null,
+            status: 'SUCCESS'
         });
         
         console.log(`Verification token for user ${user.email}: ${token}`);

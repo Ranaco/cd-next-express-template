@@ -35,7 +35,7 @@ const server = express();
 server.disable('x-powered-by');
 server.disable('etag');
 
-if (process.env.NODE_ENV !== 'development') {
+if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
     server.use(ipRateLimiter);
 }
 
@@ -105,19 +105,31 @@ server.get('/api/health', (req, res) => {
 server.use('/api/auth', authRouter);
 server.use('/api/users', userRouter);
 
-app.prepare().then(() => {
+export const createServer = async (options = {}) => {
+    const { startServer = true } = options;
+    
+    await app.prepare();
+    
     server.use((req, res) => {
         const parsedUrl = parse(req.url || '', true);
         handle(req, res, parsedUrl);
     });
 
-    server.listen(PORT, (err) => {
-        if (err) throw err;
-        console.log(`🚀 Server ready on http://localhost:${PORT}`);
-        console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-        console.log(`> Server listening as ${dev ? "development" : process.env.NODE_ENV}`);
-    });
-});
+    if (startServer) {
+        server.listen(PORT, (err) => {
+            if (err) throw err;
+            console.log(`🚀 Server ready on http://localhost:${PORT}`);
+            console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+            console.log(`> Server listening as ${dev ? "development" : process.env.NODE_ENV}`);
+        });
+    }
+
+    return { app: server, nextApp: app };
+};
+
+if (import.meta.url === new URL(import.meta.url).href) {
+    createServer().catch(console.error);
+}
 
 process.on('unhandledRejection', (err) => {
     console.error('Unhandled Rejection:', err);

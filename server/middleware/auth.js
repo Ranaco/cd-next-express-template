@@ -1,5 +1,5 @@
-import prisma from '../../prisma/client.js';
 import jwt from 'jsonwebtoken';
+import prisma from '../prisma/client.js';
 
 /**
  * Middleware to check if the user is authenticated

@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
-import prisma from '../../../prisma/client.js';
-import { logActivity, logAuthEvent } from './auth.js';
+import prisma from '../../prisma/client.js';
+import auth from '../../wrappers/auth/index.js';
 
 export const requestPasswordReset = async (req, res) => {
     try {
@@ -14,14 +14,9 @@ export const requestPasswordReset = async (req, res) => {
             });
         }
         
-        const user = await prisma.user.findUnique({
-            where: { 
-                email: email.toLowerCase(),
-                isActive: true 
-            }
-        });
+        const user = await auth.findUserByEmail(email);
         
-        if (!user) {
+        if (!user || !user.isActive) {
             return res.status(404).json({
                 success: false,
                 message: 'User not found'
@@ -52,7 +47,7 @@ export const requestPasswordReset = async (req, res) => {
             }
         });
         
-        await logAuthEvent({
+        await auth.logAuthEvent({
             userId: user.id,
             eventType: 'PASSWORD_RESET_REQUEST',
             status: 'SUCCESS',
@@ -126,9 +121,7 @@ export const resetPassword = async (req, res) => {
                 data: { usedAt: new Date() }
             });
         } else if (otp && email) {
-            const user = await prisma.user.findUnique({
-                where: { email: email.toLowerCase() }
-            });
+            const user = await auth.findUserByEmail(email);
             
             if (!user) {
                 return res.status(404).json({
@@ -175,7 +168,7 @@ export const resetPassword = async (req, res) => {
             data: { passwordHash }
         });
         
-        await logActivity({
+        await auth.logActivity({
             userId,
             action: 'PASSWORD_RESET',
             description: 'User reset their password',
@@ -184,7 +177,7 @@ export const resetPassword = async (req, res) => {
             status: 'SUCCESS'
         });
         
-        await logAuthEvent({
+        await auth.logAuthEvent({
             userId,
             eventType: 'PASSWORD_RESET',
             status: 'SUCCESS',

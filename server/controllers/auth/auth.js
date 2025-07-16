@@ -1,37 +1,15 @@
-import jwt from 'jsonwebtoken';
-import { randomBytes } from 'crypto';
-import prisma from '../../../prisma/client.js';
+import auth from '../../wrappers/auth/index.js';
 
 /**
  * Create a new user session and generate tokens
  */
 export const createSession = async (user, req) => {
-    const sessionToken = randomBytes(64).toString('hex');
-    const refreshToken = randomBytes(64).toString('hex');
-    
-    const sessionExpiresAt = new Date();
-    sessionExpiresAt.setDate(sessionExpiresAt.getDate() + 1);
-    
-    const refreshExpiresAt = new Date();
-    refreshExpiresAt.setDate(refreshExpiresAt.getDate() + 30);
-    
-    const session = await prisma.userSession.create({
-        data: {
-            userId: user.id,
-            sessionToken,
-            refreshToken,
-            expiresAt: sessionExpiresAt,
-            refreshTokenExpiresAt: refreshExpiresAt,
-            ipAddress: req.ip || null,
-            userAgent: req.headers['user-agent'] || null
-        }
-    });
-    
+    const result = await auth.createSession(user, req);
     return {
-        sessionToken,
-        refreshToken,
-        sessionExpiresAt,
-        refreshExpiresAt
+        sessionToken: result.sessionToken,
+        refreshToken: result.refreshToken,
+        sessionExpiresAt: result.expiresAt,
+        refreshExpiresAt: result.expiresAt
     };
 };
 
@@ -54,18 +32,14 @@ export const getSecureCookieConfig = (token, isRefreshToken, req) => {
  * Log user activity
  */
 export const logActivity = async (data) => {
-    return prisma.activityLog.create({
-        data
-    });
+    return auth.logActivity(data);
 };
 
 /**
  * Log authentication events
  */
 export const logAuthEvent = async (data) => {
-    return prisma.authLog.create({
-        data
-    });
+    return auth.logAuthEvent(data);
 };
 
 

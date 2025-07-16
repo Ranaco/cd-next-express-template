@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { 
   useCurrentUser, 
@@ -10,7 +12,7 @@ import {
   useResetPassword,
   useUserProfile,
   useUpdateUserProfile
-} from '../lib/authHooks';
+} from '@/lib/authHooks';
 
 export default function AuthDemo() {
   const [activeTab, setActiveTab] = useState('login');
