@@ -1,10 +1,9 @@
-import auth from '../../wrappers/auth/index.js';
-
+import wrapper from '../../wrappers/index.js'
 /**
  * Create a new user session and generate tokens
  */
 export const createSession = async (user, req) => {
-    const result = await auth.createSession(user, req);
+    const result = await wrapper.auth.createSession(user, req);
     return {
         sessionToken: result.sessionToken,
         refreshToken: result.refreshToken,
@@ -32,14 +31,14 @@ export const getSecureCookieConfig = (token, isRefreshToken, req) => {
  * Log user activity
  */
 export const logActivity = async (data) => {
-    return auth.logActivity(data);
+    return wrapper.auth.logActivity(data);
 };
 
 /**
  * Log authentication events
  */
 export const logAuthEvent = async (data) => {
-    return auth.logAuthEvent(data);
+    return wrapper.auth.logAuthEvent(data);
 };
 
 

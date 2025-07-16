@@ -1,7 +1,6 @@
-import bcrypt from 'bcryptjs';
 import prisma from '../../prisma/client.js';
-import { createSession, logActivity, logAuthEvent, getSecureCookieConfig } from './auth.js';
-import auth from '../../wrappers/auth/index.js';
+import { getSecureCookieConfig } from './auth.js';
+import wrapper from '../../wrappers/index.js'
 
 /**
  * Standard login with email and password
@@ -18,13 +17,13 @@ export const login = async (req, res) => {
         }
 
         // Use wrapper to verify credentials
-        const credentialsResult = await auth.verifyCredentials(email, password);
+        const credentialsResult = await wrapper.auth.verifyCredentials(email, password);
         
         if (!credentialsResult.success) {
             // Log failed attempt if user exists
-            const user = await auth.findUserByEmail(email);
+            const user = await wrapper.auth.findUserByEmail(email);
             if (user) {
-                await auth.logAuthEvent({
+                await wrapper.auth.logAuthEvent({
                     userId: user.id,
                     eventType: 'LOGIN_ATTEMPT',
                     status: 'FAILED',
@@ -43,9 +42,9 @@ export const login = async (req, res) => {
         const user = credentialsResult.user;
 
         // Use wrapper to create session
-        const session = await auth.createSession(user, req);
+        const session = await wrapper.auth.createSession(user, req);
         
-        await auth.logActivity({
+        await wrapper.auth.logActivity({
             userId: user.id,
             action: 'LOGIN',
             status: 'SUCCESS',
@@ -55,7 +54,7 @@ export const login = async (req, res) => {
             status: 'SUCCESS'
         });
         
-        await auth.logAuthEvent({
+        await wrapper.auth.logAuthEvent({
             userId: user.id,
             eventType: 'LOGIN',
             status: 'SUCCESS',
@@ -83,7 +82,7 @@ export const login = async (req, res) => {
     } catch (error) {
         console.error('Login error:', error);
         
-        await auth.logAuthEvent({
+        await wrapper.auth.logAuthEvent({
             eventType: 'LOGIN_ATTEMPT',
             status: 'FAILED',
             ipAddress: req.ip || null,
@@ -113,10 +112,10 @@ export const requestOTP = async (req, res) => {
         }
         
         // Use wrapper to find or create user
-        const { user, isNewUser } = await auth.findOrCreateClientUser(email);
+        const { user, isNewUser } = await wrapper.auth.findOrCreateClientUser(email);
         
         if (isNewUser) {
-            await auth.logActivity({
+            await wrapper.auth.logActivity({
                 userId: user.id,
                 action: 'USER_CREATED',
                 status: 'SUCCESS',
@@ -127,9 +126,9 @@ export const requestOTP = async (req, res) => {
         }
         
         // Use wrapper to generate OTP
-        const { otp, magicLinkToken, expiresAt } = await auth.generateOTP(user.id);
+        const { otp, magicLinkToken, expiresAt } = await wrapper.auth.generateOTP(user.id);
         
-        await auth.logAuthEvent({
+        await wrapper.auth.logAuthEvent({
             userId: user.id,
             eventType: 'OTP_REQUEST',
             status: 'SUCCESS',
@@ -152,7 +151,7 @@ export const requestOTP = async (req, res) => {
     } catch (error) {
         console.error('OTP request error:', error);
         
-        await auth.logAuthEvent({
+        await wrapper.auth.logAuthEvent({
             eventType: 'OTP_REQUEST',
             status: 'FAILED',
             ipAddress: req.ip || null,
@@ -182,7 +181,7 @@ export const verifyOTP = async (req, res) => {
         }
 
         // Use wrapper to verify OTP
-        const otpResult = await auth.verifyOTP(email, otp);
+        const otpResult = await wrapper.auth.verifyOTP(email, otp);
         
         if (!otpResult.success) {
             return res.status(401).json({
@@ -194,9 +193,9 @@ export const verifyOTP = async (req, res) => {
         const user = otpResult.user;
 
         // Use wrapper to create session
-        const session = await auth.createSession(user, req);
+        const session = await wrapper.auth.createSession(user, req);
         
-        await auth.logAuthEvent({
+        await wrapper.auth.logAuthEvent({
             userId: user.id,
             eventType: 'OTP_VERIFICATION',
             status: 'SUCCESS',
@@ -205,7 +204,7 @@ export const verifyOTP = async (req, res) => {
             details: `OTP verification successful for ${email}`
         });
         
-        await auth.logActivity({
+        await wrapper.auth.logActivity({
             userId: user.id,
             action: 'LOGIN',
             description: 'User logged in via OTP',
@@ -232,7 +231,7 @@ export const verifyOTP = async (req, res) => {
         });
     } catch (error) {
         console.error('OTP verification error:', error);
-        await auth.logAuthEvent({
+        await wrapper.auth.logAuthEvent({
             eventType: 'OTP_VERIFICATION',
             status: 'FAILED',
             ipAddress: req.ip || null,
@@ -266,7 +265,7 @@ export const logout = async (req, res) => {
             });
             
             if (req.user) {
-                await auth.logActivity({
+                await wrapper.auth.logActivity({
                     userId: req.user.id,
                     action: 'LOGOUT',
                     description: 'User logged out',
@@ -275,7 +274,7 @@ export const logout = async (req, res) => {
                     status: 'SUCCESS'
                 });
                 
-                await auth.logAuthEvent({
+                await wrapper.auth.logAuthEvent({
                     userId: req.user.id,
                     eventType: 'LOGOUT',
                     status: 'SUCCESS',
@@ -297,7 +296,7 @@ export const logout = async (req, res) => {
         console.error('Logout error:', error);
         
         if (req.user) {
-            await auth.logAuthEvent({
+            await wrapper.auth.logAuthEvent({
                 userId: req.user.id,
                 eventType: 'LOGOUT',
                 status: 'FAILED',

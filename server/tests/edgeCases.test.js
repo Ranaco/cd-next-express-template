@@ -5,8 +5,8 @@ import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import prisma from '../prisma/client.js';
 import authRouter from '../routers/auth_router.js';
-import auth from '../wrappers/auth/index.js';
 import { createDefaultRole } from './setup.js';
+import wrapper from '../wrappers/index.js'
 
 // Create test app
 const createTestApp = () => {
@@ -66,13 +66,13 @@ describe('Authentication Edge Cases and Error Handling', () => {
                 }
             });
 
-            const sessionVerification = await auth.verifySession(expiredSession.sessionToken);
+            const sessionVerification = await wrapper.auth.verifySession(expiredSession.sessionToken);
             expect(sessionVerification.success).toBe(false);
             expect(sessionVerification.message).toBe('Session expired');
         });
 
         it('should handle non-existent sessions', async () => {
-            const sessionVerification = await auth.verifySession('non-existent-token');
+            const sessionVerification = await wrapper.auth.verifySession('non-existent-token');
             expect(sessionVerification.success).toBe(false);
             expect(sessionVerification.message).toBe('Session not found');
         });
@@ -90,7 +90,7 @@ describe('Authentication Edge Cases and Error Handling', () => {
                 }
             });
 
-            const refreshResult = await auth.refreshSession(expiredSession.refreshToken, {
+            const refreshResult = await wrapper.auth.refreshSession(expiredSession.refreshToken, {
                 headers: { 'user-agent': 'test-agent' },
                 ip: '127.0.0.1'
             });
@@ -100,7 +100,7 @@ describe('Authentication Edge Cases and Error Handling', () => {
         });
 
         it('should handle invalid refresh token', async () => {
-            const refreshResult = await auth.refreshSession('invalid-refresh-token', {
+            const refreshResult = await wrapper.auth.refreshSession('invalid-refresh-token', {
                 headers: { 'user-agent': 'test-agent' },
                 ip: '127.0.0.1'
             });
@@ -124,7 +124,7 @@ describe('Authentication Edge Cases and Error Handling', () => {
                 }
             });
 
-            const otpVerification = await auth.verifyOTP(testUser.email, '123456');
+            const otpVerification = await wrapper.auth.verifyOTP(testUser.email, '123456');
             expect(otpVerification.success).toBe(false);
             expect(otpVerification.message).toBe('Invalid or expired OTP');
         });
@@ -142,13 +142,13 @@ describe('Authentication Edge Cases and Error Handling', () => {
                 }
             });
 
-            const otpVerification = await auth.verifyOTP(testUser.email, '123456');
+            const otpVerification = await wrapper.auth.verifyOTP(testUser.email, '123456');
             expect(otpVerification.success).toBe(false);
             expect(otpVerification.message).toBe('Invalid or expired OTP');
         });
 
         it('should handle OTP for non-existent user', async () => {
-            const otpVerification = await auth.verifyOTP('nonexistent@example.com', '123456');
+            const otpVerification = await wrapper.auth.verifyOTP('nonexistent@example.com', '123456');
             expect(otpVerification.success).toBe(false);
             expect(otpVerification.message).toBe('User not found');
         });
@@ -180,25 +180,25 @@ describe('Authentication Edge Cases and Error Handling', () => {
             });
 
             // Should use the most recent OTP
-            const otpVerification = await auth.verifyOTP(testUser.email, '222222');
+            const otpVerification = await wrapper.auth.verifyOTP(testUser.email, '222222');
             expect(otpVerification.success).toBe(true);
 
             // Old OTP should not work
-            const oldOtpVerification = await auth.verifyOTP(testUser.email, '111111');
+            const oldOtpVerification = await wrapper.auth.verifyOTP(testUser.email, '111111');
             expect(oldOtpVerification.success).toBe(false);
         });
     });
 
     describe('Magic Link Edge Cases', () => {
         it('should handle invalid magic link token', async () => {
-            const magicLinkVerification = await auth.verifyMagicLink('invalid-token');
+            const magicLinkVerification = await wrapper.auth.verifyMagicLink('invalid-token');
             expect(magicLinkVerification.success).toBe(false);
             expect(magicLinkVerification.message).toBe('Invalid or expired magic link');
         });
 
         it('should handle magic link for deleted user', async () => {
             // Generate OTP first
-            const otpResult = await auth.generateOTP(testUser.id);
+            const otpResult = await wrapper.auth.generateOTP(testUser.id);
             
             // Delete the user
             await prisma.user.delete({
@@ -206,14 +206,14 @@ describe('Authentication Edge Cases and Error Handling', () => {
             });
 
             // Try to verify magic link
-            const magicLinkVerification = await auth.verifyMagicLink(otpResult.magicLinkToken);
+            const magicLinkVerification = await wrapper.auth.verifyMagicLink(otpResult.magicLinkToken);
             expect(magicLinkVerification.success).toBe(false);
             expect(magicLinkVerification.message).toBe('Invalid magic link');
         });
 
         it('should handle magic link with expired verification token', async () => {
             // Generate OTP
-            const otpResult = await auth.generateOTP(testUser.id);
+            const otpResult = await wrapper.auth.generateOTP(testUser.id);
             
             // Expire the verification token
             await prisma.verificationToken.updateMany({
@@ -226,7 +226,7 @@ describe('Authentication Edge Cases and Error Handling', () => {
                 }
             });
 
-            const magicLinkVerification = await auth.verifyMagicLink(otpResult.magicLinkToken);
+            const magicLinkVerification = await wrapper.auth.verifyMagicLink(otpResult.magicLinkToken);
             expect(magicLinkVerification.success).toBe(false);
             expect(magicLinkVerification.message).toBe('Magic link is invalid or has expired');
         });
@@ -351,7 +351,7 @@ describe('Authentication Edge Cases and Error Handling', () => {
     describe('Client User Creation Edge Cases', () => {
         it('should handle client user creation with special characters in email', async () => {
             const specialEmail = 'test.user+tag@example.com';
-            const { user, isNewUser } = await auth.findOrCreateClientUser(specialEmail);
+            const { user, isNewUser } = await wrapper.auth.findOrCreateClientUser(specialEmail);
 
             expect(isNewUser).toBe(true);
             expect(user.email).toBe(specialEmail);
@@ -362,7 +362,7 @@ describe('Authentication Edge Cases and Error Handling', () => {
 
         it('should handle client user creation with numeric email', async () => {
             const numericEmail = '123456@example.com';
-            const { user, isNewUser } = await auth.findOrCreateClientUser(numericEmail);
+            const { user, isNewUser } = await wrapper.auth.findOrCreateClientUser(numericEmail);
 
             expect(isNewUser).toBe(true);
             expect(user.email).toBe(numericEmail);
@@ -384,7 +384,7 @@ describe('Authentication Edge Cases and Error Handling', () => {
             });
 
             // Try to create a new user with potentially conflicting username
-            const { user, isNewUser } = await auth.findOrCreateClientUser('conflict@example.com');
+            const { user, isNewUser } = await wrapper.auth.findOrCreateClientUser('conflict@example.com');
 
             expect(isNewUser).toBe(true);
             expect(user.email).toBe('conflict@example.com');
@@ -524,7 +524,7 @@ describe('Authentication Edge Cases and Error Handling', () => {
             
             // Try to create the same user multiple times simultaneously
             for (let i = 0; i < 3; i++) {
-                promises.push(auth.findOrCreateClientUser(email));
+                promises.push(wrapper.auth.findOrCreateClientUser(email));
             }
 
             const results = await Promise.all(promises);

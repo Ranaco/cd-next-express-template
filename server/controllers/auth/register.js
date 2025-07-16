@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import prisma from '../../prisma/client.js';
-import auth from '../../wrappers/auth/index.js';
+import wrapper from '../../wrappers/index.js'
 
 /**
  * Verify user's email using token or OTP
@@ -30,7 +30,7 @@ export const verifyEmail = async (req, res) => {
                 include: { user: true }
             });
         } else {
-            const user = await auth.findUserByEmail(email);
+            const user = await wrapper.auth.findUserByEmail(email);
             
             if (!user) {
                 return res.status(404).json({
@@ -71,7 +71,7 @@ export const verifyEmail = async (req, res) => {
             }
         });
         
-        await auth.logActivity({
+        await wrapper.auth.logActivity({
             userId: verification.userId,
             action: 'EMAIL_VERIFIED',
             description: 'User verified their email',
@@ -80,7 +80,7 @@ export const verifyEmail = async (req, res) => {
             status: 'SUCCESS'
         });
         
-        await auth.logAuthEvent({
+        await wrapper.auth.logAuthEvent({
             userId: verification.userId,
             eventType: 'EMAIL_VERIFICATION',
             status: 'SUCCESS',
@@ -169,7 +169,7 @@ export const register = async (req, res) => {
             }
         });
         
-        await auth.logActivity({
+        await wrapper.auth.logActivity({
             userId: user.id,
             action: 'REGISTER',
             description: 'User registered',

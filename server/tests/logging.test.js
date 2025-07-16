@@ -5,8 +5,8 @@ import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import prisma from '../prisma/client.js';
 import authRouter from '../routers/auth_router.js';
-import auth from '../wrappers/auth/index.js';
 import { createDefaultRole } from './setup.js';
+import wrapper from '../wrappers/index.js'
 
 // Create test app
 const createTestApp = () => {
@@ -422,7 +422,7 @@ describe('Authentication Logging Tests', () => {
                 userAgent: 'test-agent'
             };
 
-            const logEntry = await auth.logActivity(logData);
+            const logEntry = await wrapper.auth.logActivity(logData);
 
             expect(logEntry).toBeTruthy();
             expect(logEntry.userId).toBe(testUser.id);
@@ -443,7 +443,7 @@ describe('Authentication Logging Tests', () => {
                 details: 'Test auth event'
             };
 
-            const logEntry = await auth.logAuthEvent(logData);
+            const logEntry = await wrapper.auth.logAuthEvent(logData);
 
             expect(logEntry).toBeTruthy();
             expect(logEntry.userId).toBe(testUser.id);
@@ -463,7 +463,7 @@ describe('Authentication Logging Tests', () => {
                 userAgent: 'test-agent'
             };
 
-            const logEntry = await auth.logActivity(logData);
+            const logEntry = await wrapper.auth.logActivity(logData);
 
             expect(logEntry).toBeTruthy();
             expect(logEntry.userId).toBeNull();
@@ -480,7 +480,7 @@ describe('Authentication Logging Tests', () => {
                 details: 'Anonymous auth event'
             };
 
-            const logEntry = await auth.logAuthEvent(logData);
+            const logEntry = await wrapper.auth.logAuthEvent(logData);
 
             expect(logEntry).toBeTruthy();
             expect(logEntry.userId).toBeNull();

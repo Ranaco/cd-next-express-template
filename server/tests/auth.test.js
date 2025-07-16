@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import prisma from '../prisma/client.js';
 import authRouter from '../routers/auth_router.js';
+import wrapper from '../wrappers/index.js'
 import { cleanupDatabase, createDefaultRole } from './setup.js';
 
 // Create test app
@@ -735,11 +736,9 @@ describe('Authentication Tests', () => {
     });
 
     describe('Auth Wrapper Functions', () => {
-        it('should create and verify sessions', async () => {
-            const auth = (await import('../wrappers/auth/index.js')).default;
-            
+        it('should create and verify sessions', async () => {            
             // Create session
-            const session = await auth.createSession(testUser, {
+            const session = await wrapper.auth.createSession(testUser, {
                 headers: { 'user-agent': 'test-agent' },
                 ip: '127.0.0.1'
             });
@@ -749,40 +748,38 @@ describe('Authentication Tests', () => {
             expect(session.expiresAt).toBeDefined();
 
             // Verify session
-            const verificationResult = await auth.verifySession(session.sessionToken);
+            const verificationResult = await wrapper.auth.verifySession(session.sessionToken);
             expect(verificationResult.success).toBe(true);
             expect(verificationResult.user.id).toBe(testUser.id);
         });
 
         it('should invalidate sessions', async () => {
-            const auth = (await import('../wrappers/auth/index.js')).default;
             
             // Create session
-            const session = await auth.createSession(testUser, {
+            const session = await wrapper.auth.createSession(testUser, {
                 headers: { 'user-agent': 'test-agent' },
                 ip: '127.0.0.1'
             });
 
             // Invalidate session
-            const invalidationResult = await auth.invalidateSession(session.sessionToken);
+            const invalidationResult = await wrapper.auth.invalidateSession(session.sessionToken);
             expect(invalidationResult.success).toBe(true);
 
             // Verify session is no longer valid
-            const verificationResult = await auth.verifySession(session.sessionToken);
+            const verificationResult = await wrapper.auth.verifySession(session.sessionToken);
             expect(verificationResult.success).toBe(false);
         });
 
         it('should refresh sessions', async () => {
-            const auth = (await import('../wrappers/auth/index.js')).default;
             
             // Create session
-            const session = await auth.createSession(testUser, {
+            const session = await wrapper.auth.createSession(testUser, {
                 headers: { 'user-agent': 'test-agent' },
                 ip: '127.0.0.1'
             });
 
             // Refresh session
-            const refreshResult = await auth.refreshSession(session.refreshToken, {
+            const refreshResult = await wrapper.auth.refreshSession(session.refreshToken, {
                 headers: { 'user-agent': 'test-agent' },
                 ip: '127.0.0.1'
             });
@@ -793,51 +790,43 @@ describe('Authentication Tests', () => {
             expect(refreshResult.sessionToken).not.toBe(session.sessionToken);
         });
 
-        it('should verify credentials', async () => {
-            const auth = (await import('../wrappers/auth/index.js')).default;
-            
+        it('should verify credentials', async () => {            
             // Valid credentials
-            const validResult = await auth.verifyCredentials(testUser.email, 'password123');
+            const validResult = await wrapper.auth.verifyCredentials(testUser.email, 'password123');
             expect(validResult.success).toBe(true);
             expect(validResult.user.id).toBe(testUser.id);
 
             // Invalid credentials
-            const invalidResult = await auth.verifyCredentials(testUser.email, 'wrongpassword');
+            const invalidResult = await wrapper.auth.verifyCredentials(testUser.email, 'wrongpassword');
             expect(invalidResult.success).toBe(false);
         });
 
-        it('should generate and verify OTP', async () => {
-            const auth = (await import('../wrappers/auth/index.js')).default;
-            
+        it('should generate and verify OTP', async () => {            
             // Generate OTP
-            const otpResult = await auth.generateOTP(testUser.id);
+            const otpResult = await wrapper.auth.generateOTP(testUser.id);
             expect(otpResult.otp).toBeDefined();
             expect(otpResult.magicLinkToken).toBeDefined();
             expect(otpResult.expiresAt).toBeDefined();
 
             // Verify OTP
-            const verificationResult = await auth.verifyOTP(testUser.email, otpResult.otp);
+            const verificationResult = await wrapper.auth.verifyOTP(testUser.email, otpResult.otp);
             expect(verificationResult.success).toBe(true);
             expect(verificationResult.user.id).toBe(testUser.id);
         });
 
-        it('should verify magic link tokens', async () => {
-            const auth = (await import('../wrappers/auth/index.js')).default;
-            
+        it('should verify magic link tokens', async () => {            
             // Generate OTP (which also creates magic link token)
-            const otpResult = await auth.generateOTP(testUser.id);
+            const otpResult = await wrapper.auth.generateOTP(testUser.id);
             
             // Verify magic link token
-            const verificationResult = await auth.verifyMagicLink(otpResult.magicLinkToken);
+            const verificationResult = await wrapper.auth.verifyMagicLink(otpResult.magicLinkToken);
             expect(verificationResult.success).toBe(true);
             expect(verificationResult.user.id).toBe(testUser.id);
         });
 
-        it('should create client users automatically', async () => {
-            const auth = (await import('../wrappers/auth/index.js')).default;
-            
+        it('should create client users automatically', async () => {            
             const email = 'autoclient@example.com';
-            const { user, isNewUser } = await auth.findOrCreateClientUser(email);
+            const { user, isNewUser } = await wrapper.auth.findOrCreateClientUser(email);
             
             expect(isNewUser).toBe(true);
             expect(user.email).toBe(email);
@@ -845,7 +834,7 @@ describe('Authentication Tests', () => {
             expect(user.isActive).toBe(true);
 
             // Should return existing user on second call
-            const { user: existingUser, isNewUser: isNewUserSecond } = await auth.findOrCreateClientUser(email);
+            const { user: existingUser, isNewUser: isNewUserSecond } = await wrapper.auth.findOrCreateClientUser(email);
             expect(isNewUserSecond).toBe(false);
             expect(existingUser.id).toBe(user.id);
         });

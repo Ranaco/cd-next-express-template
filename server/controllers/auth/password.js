@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import prisma from '../../prisma/client.js';
-import auth from '../../wrappers/auth/index.js';
+import wrapper from '../../wrappers/index.js';
 
 export const requestPasswordReset = async (req, res) => {
     try {
@@ -14,7 +14,7 @@ export const requestPasswordReset = async (req, res) => {
             });
         }
         
-        const user = await auth.findUserByEmail(email);
+        const user = await wrapper.auth.findUserByEmail(email);
         
         if (!user || !user.isActive) {
             return res.status(404).json({
@@ -47,7 +47,7 @@ export const requestPasswordReset = async (req, res) => {
             }
         });
         
-        await auth.logAuthEvent({
+        await wrapper.auth.logAuthEvent({
             userId: user.id,
             eventType: 'PASSWORD_RESET_REQUEST',
             status: 'SUCCESS',
@@ -121,7 +121,7 @@ export const resetPassword = async (req, res) => {
                 data: { usedAt: new Date() }
             });
         } else if (otp && email) {
-            const user = await auth.findUserByEmail(email);
+            const user = await wrapper.auth.findUserByEmail(email);
             
             if (!user) {
                 return res.status(404).json({
@@ -168,7 +168,7 @@ export const resetPassword = async (req, res) => {
             data: { passwordHash }
         });
         
-        await auth.logActivity({
+        await wrapper.auth.logActivity({
             userId,
             action: 'PASSWORD_RESET',
             description: 'User reset their password',
@@ -177,7 +177,7 @@ export const resetPassword = async (req, res) => {
             status: 'SUCCESS'
         });
         
-        await auth.logAuthEvent({
+        await wrapper.auth.logAuthEvent({
             userId,
             eventType: 'PASSWORD_RESET',
             status: 'SUCCESS',
