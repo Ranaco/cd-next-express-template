@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@prisma/client": "^5.7.1",
+    "@prisma/client": "^6.13.0",
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
