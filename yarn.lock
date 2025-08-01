@@ -535,10 +535,10 @@
   dependencies:
     "@noble/hashes" "^1.1.5"
 
-"@prisma/client@^5.7.1":
-  version "5.22.0"
-  resolved "https://registry.npmjs.org/@prisma/client/-/client-5.22.0.tgz"
-  integrity sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==
+"@prisma/client@^6.13.0":
+  version "6.13.0"
+  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-6.13.0.tgz#7073ab6ccf10c0c99ab7582e39aa7a1422c6a7db"
+  integrity sha512-8m2+I3dQovkV8CkDMluiwEV1TxV9EXdT6xaCz39O6jYw7mkf5gwfmi+cL4LJsEPwz5tG7sreBwkRpEMJedGYUQ==
 
 "@prisma/debug@5.22.0":
   version "5.22.0"
